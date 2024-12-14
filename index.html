@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barras de Vida e Sanidade</title>
+  <style>
+    body {
+      background-color: transparent; /* Alterado para transparente */
+      color: white;
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .bar-container {
+      display: flex;
+      align-items: center;
+      margin: 10px 0;
+    }
+
+    .bar {
+      position: relative;
+      width: 350px;
+      height: 40px; /* Diminuído para 40px */
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 2px solid white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      overflow: hidden;
+      padding: 0 10px; /* Espaço interno para os botões */
+    }
+
+    .fill {
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transition: width 0.3s ease, background-color 0.3s ease;
+    }
+
+    .health {
+      background-color: #E74C3C; /* Vermelho Confortável */
+    }
+
+    .sanity {
+      background-color: #3498DB; /* Azul Confortável */
+    }
+
+    .value {
+      position: relative;
+      z-index: 1;
+    }
+
+    .button {
+      background-color: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: none;
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.8em; /* Reduzido para 0.8em */
+      width: 25px; /* Diminuído para 25px */
+      height: 25px; /* Diminuído para 25px */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%; /* Arredondamento para botões */
+      box-shadow: 0 0 5px white; /* Pequeno brilho */
+      z-index: 2; /* Para garantir que fiquem acima da barra */
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .button:hover {
+      background-color: white;
+      color: black;
+    }
+
+    .button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div class="bar-container">
+    <div class="bar">
+      <button class="button" onclick="adjustBar('health', -2)">&lt;&lt;</button>
+      <button class="button" onclick="adjustBar('health', -1)">&lt;</button>
+      <div class="fill health" id="health-fill" style="width: 100%;"></div>
+      <div class="value" id="health-value">10/10</div>
+      <button class="button" onclick="adjustBar('health', 1)">&gt;</button>
+      <button class="button" onclick="adjustBar('health', 2)">&gt;&gt;</button>
+    </div>
+  </div>
+
+  <div class="bar-container">
+    <div class="bar">
+      <button class="button" onclick="adjustBar('sanity', -2)">&lt;&lt;</button>
+      <button class="button" onclick="adjustBar('sanity', -1)">&lt;</button>
+      <div class="fill sanity" id="sanity-fill" style="width: 100%;"></div>
+      <div class="value" id="sanity-value">41/41</div>
+      <button class="button" onclick="adjustBar('sanity', 1)">&gt;</button>
+      <button class="button" onclick="adjustBar('sanity', 2)">&gt;&gt;</button>
+    </div>
+  </div>
+
+  <script>
+    const defaultStats = {
+      health: { current: 10, max: 10 },
+      sanity: { current: 41, max: 41 },
+    };
+
+    let stats = JSON.parse(localStorage.getItem('stats')) || defaultStats;
+
+    function adjustBar(type, amount) {
+      const stat = stats[type];
+      stat.current = Math.max(0, Math.min(stat.max, stat.current + amount));
+
+      const fill = document.getElementById(`${type}-fill`);
+      const value = document.getElementById(`${type}-value`);
+
+      const percentage = (stat.current / stat.max) * 100;
+      fill.style.width = `${percentage}%`;
+
+      // Ajusta a cor de fundo enquanto o valor cai
+      if (type === 'health') {
+        fill.style.backgroundColor = `rgba(231, 76, 60, ${0.5 + (percentage / 200)})`;
+      } else if (type === 'sanity') {
+        fill.style.backgroundColor = `rgba(52, 152, 219, ${0.5 + (percentage / 200)})`;
+      }
+
+      value.textContent = `${stat.current}/${stat.max}`;
+
+      // Salvar no localStorage sempre que uma alteração é feita
+      localStorage.setItem('stats', JSON.stringify(stats));
+    }
+
+    // Inicializar as barras com os valores do localStorage
+    window.onload = function() {
+      document.getElementById('health-fill').style.width = `${(stats.health.current / stats.health.max) * 100}%`;
+      document.getElementById('sanity-fill').style.width = `${(stats.sanity.current / stats.sanity.max) * 100}%`;
+      document.getElementById('health-value').textContent = `${stats.health.current}/${stats.health.max}`;
+      document.getElementById('sanity-value').textContent = `${stats.sanity.current}/${stats.sanity.max}`;
+    };
+  </script>
+</body>
+</html>
